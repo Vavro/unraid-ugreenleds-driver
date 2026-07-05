@@ -1,9 +1,9 @@
 <?xml version='1.0' standalone='yes'?>
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
-  <!ENTITY author      "ich777">
-  <!ENTITY version     "2024.07.12">
-  <!ENTITY md5         "9f0e36108e2c4520186cd96fad4f200d">
+  <!ENTITY author      "hanssep">
+  <!ENTITY version     "2026.07.05">
+  <!ENTITY md5         "8fe350689d2ad4b7a6587e4d5c2fccf4">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-md5     "779c835a2eb2e2ae65319f8de2d6a7d3">
   <!ENTITY gitURL      "https://github.com/&author;/unraid-&name;/raw/master">
@@ -13,9 +13,17 @@
   <!ENTITY packages    "/boot/config/plugins/&name;/packages">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.0.0-beta.0.1" support="https://forums.unraid.net/topic/92865-support-ich777-amd-vendor-reset-coraltpu-hpsahba/">
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.0.0-beta.0.1" support="https://github.com/hanssep/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.07.05
+- Fork of ich777/unraid-ugreenleds-driver, credit to ich777 for the original plugin
+- Add Settings UI page under Settings > Utilities
+- Add night mode (scheduled dimming) with configurable brightness and time window
+- Add configurable disk LED invert (activity-only vs. always-on)
+- Add daemon status indicator (running/stopped, NAS model) on the settings page
+- Add live color preview for disk and network LEDs before applying
 
 ###2024.07.12
 - Increase the interval from netdev to 500ms
@@ -140,7 +148,41 @@ COLOR_NETDEV_LINK_1000=\"0 0 255\"
 COLOR_NETDEV_LINK_2500=\"255 255 0\"
 COLOR_NETDEV_LINK_10000=\"255 255 255\"
 COLOR_NETDEV_GATEWAY_UNREACHABLE=\"255 0 0\"
-CHECK_NETDEV_INTERVAL=\"30\"" > &plugin;/settings.cfg
+CHECK_NETDEV_INTERVAL=\"30\"
+BRIGHTNESS_NIGHT=\"15\"
+BRIGHTNESS_POWER_DAY=\"128\"
+NIGHT_MODE_ENABLED=\"false\"
+NIGHT_START_HOUR=\"22\"
+NIGHT_END_HOUR=\"7\"
+DISK_LED_INVERT=\"1\"
+NETDEV_LED_MODE=\"netdev\"
+ARRAY_HEALTH_LED=\"false\"
+PARITY_PROGRESS_LED=\"true\"
+UPS_ALERT_LED=\"true\"" > &plugin;/settings.cfg
+fi
+
+# fork: migrate existing settings.cfg - add new keys if missing
+if ! grep -q "NIGHT_MODE_ENABLED" "&plugin;/settings.cfg"; then
+  echo 'BRIGHTNESS_NIGHT="15"' >> &plugin;/settings.cfg
+  echo 'BRIGHTNESS_POWER_DAY="128"' >> &plugin;/settings.cfg
+  echo 'NIGHT_MODE_ENABLED="false"' >> &plugin;/settings.cfg
+  echo 'NIGHT_START_HOUR="22"' >> &plugin;/settings.cfg
+  echo 'NIGHT_END_HOUR="7"' >> &plugin;/settings.cfg
+  echo 'DISK_LED_INVERT="1"' >> &plugin;/settings.cfg
+fi
+
+# fork: migrate existing settings.cfg - add NETDEV_LED_MODE if missing (separate from the block above,
+# since installs updated before this feature already have NIGHT_MODE_ENABLED but not this key)
+if ! grep -q "NETDEV_LED_MODE" "&plugin;/settings.cfg"; then
+  echo 'NETDEV_LED_MODE="netdev"' >> &plugin;/settings.cfg
+fi
+
+# fork: migrate existing settings.cfg - add health/parity/UPS keys if missing (separate guard,
+# since installs updated before this feature already have NETDEV_LED_MODE but not these keys)
+if ! grep -q "ARRAY_HEALTH_LED" "&plugin;/settings.cfg"; then
+  echo 'ARRAY_HEALTH_LED="false"' >> &plugin;/settings.cfg
+  echo 'PARITY_PROGRESS_LED="true"' >> &plugin;/settings.cfg
+  echo 'UPS_ALERT_LED="true"' >> &plugin;/settings.cfg
 fi
 
 # Check for old packages
@@ -156,12 +198,19 @@ fi
 
 # Check if ugreen-leds script is already started
 if ! pgrep -f "/usr/bin/ugreen-leds" >/dev/null 2>&amp;1 ; then
+  # fork: clear stale lockfile (daemon died without running its EXIT trap)
+  rm -f /var/run/ugreen-leds.lock
   echo "/usr/bin/ugreen-leds" | at now -M
 else
   kill $(pgrep -f "/usr/bin/ugreen-leds") >/dev/null 2>&amp;1
   sleep 1
+  # fork: clear stale lockfile (daemon killed without running its EXIT trap)
+  rm -f /var/run/ugreen-leds.lock
   echo "/usr/bin/ugreen-leds" | at now -M
 fi
+
+# fork: regenerate night mode cron on every install/boot
+bash &emhttp;/include/apply.sh cron
 
 # Download logo
 if [ ! -f "&plugin;/&name;.png" ]; then
@@ -230,9 +279,14 @@ echo "----------------------------------------"
 echo "-----Uninstalling UGREEN LED Driver-----"
 echo "----------------------------------------"
 kill $(pgrep -f "/usr/bin/ugreen-leds") >/dev/null 2>&amp;1
+# fork: remove night mode cron before the plugin directory goes away
+rm -f &plugin;/night-mode.cron
+command -v update_cron >/dev/null 2>&amp;1 &amp;&amp; update_cron
 # Remove plugin related files
 removepkg &name;-&version; >/dev/null 2>&amp;1
 rm -rf &plugin;
+# fork: remove settings UI page
+rm -rf &emhttp;
 echo
 echo "---------------------------------------------------------------------------"
 echo "---------UGREEN LED Driver uninstalled, please reboot your server!---------"
