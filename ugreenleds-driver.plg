@@ -1,21 +1,35 @@
 <?xml version='1.0' standalone='yes'?>
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
-  <!ENTITY author      "hanssep">
-  <!ENTITY version     "2026.07.05">
-  <!ENTITY md5         "8fe350689d2ad4b7a6587e4d5c2fccf4">
+  <!ENTITY author      "Vavro">
+  <!ENTITY version     "2026.09.06.1">
+  <!ENTITY release     "v2026.09.06.1">
+  <!ENTITY package-version "2026.07.05">
+  <!ENTITY package-sha256 "95e66e4e6f7b589d22d830dec53f58f0f6e54d5c0e50402b64264f9151d7b57f">
   <!ENTITY i2c-version "4.3">
-  <!ENTITY i2c-md5     "779c835a2eb2e2ae65319f8de2d6a7d3">
-  <!ENTITY gitURL      "https://github.com/&author;/unraid-&name;/raw/master">
+  <!ENTITY i2c-sha256  "9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c">
+  <!ENTITY kernel-version "6.18.38-Unraid">
+  <!ENTITY kernel-package "ugreen_leds-20260705-6.18.38-Unraid-1.txz">
+  <!ENTITY kernel-sha256 "744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa">
+  <!ENTITY helper-commit "f0562fc1add4ed20c20451bf17f570502bc7ed00">
+  <!ENTITY helper-sha256 "e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043">
+  <!ENTITY gitURL      "https://raw.githubusercontent.com/&author;/unraid-&name;/&release;">
   <!ENTITY pluginURL   "&gitURL;/&name;.plg">
   <!ENTITY plugin      "/boot/config/plugins/&name;">
   <!ENTITY emhttp      "/usr/local/emhttp/plugins/&name;">
   <!ENTITY packages    "/boot/config/plugins/&name;/packages">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.0.0-beta.0.1" support="https://github.com/hanssep/unraid-ugreenleds-driver/issues">
+<PLUGIN name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.3.2" max="7.3.2" support="https://github.com/Vavro/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.09.06.1
+- Pin the plugin update source to an immutable release tag
+- Restrict installation to the reviewed Unraid 7.3.2 release
+- Verify plugin, I2C tools, helper, and kernel module artifacts with SHA-256
+- Pin the update helper and kernel module to reviewed immutable artifacts
+- Fail closed instead of selecting mutable release assets at installation time
 
 ###2026.07.05
 - Fork of ich777/unraid-ugreenleds-driver, credit to ich777 for the original plugin
@@ -49,13 +63,13 @@
 <FILE Run="/bin/bash">
 <INLINE>
 kill $(pgrep -f "/usr/bin/ugreen-leds") >/dev/null 2>&amp;1
-rm -f $(ls &plugin;/&name;-*.txz 2>/dev/null|grep -v '&version;')
+rm -f $(ls &plugin;/&name;-*.txz 2>/dev/null|grep -v '&package-version;')
 </INLINE>
 </FILE>
 
-<FILE Name="&plugin;/&name;-&version;.txz" Run="upgradepkg --install-new">
-<URL>&gitURL;/packages/&name;-&version;.txz</URL>
-<MD5>&md5;</MD5>
+<FILE Name="&plugin;/&name;-&package-version;.txz" Run="upgradepkg --install-new">
+<URL>&gitURL;/packages/&name;-&package-version;.txz</URL>
+<SHA256>&package-sha256;</SHA256>
 </FILE>
 
 <FILE Run="/bin/bash">
@@ -66,7 +80,7 @@ rm -f $(ls &plugin;/i2c-tools-*-x86_64-1.txz 2>/dev/null|grep -v '&i2c-version;'
 
 <FILE Name="&plugin;/i2c-tools-&i2c-version;-x86_64-1.txz" Run="upgradepkg --install-new">
 <URL>&gitURL;/packages/i2c-tools-&i2c-version;-x86_64-1.txz</URL>
-<MD5>&i2c-md5;</MD5>
+<SHA256>&i2c-sha256;</SHA256>
 </FILE>
 
 
@@ -83,29 +97,33 @@ The plugin is based on: https://github.com/miskcoo/ugreen_dx4600_leds_controller
 <INLINE>
 
 download() {
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}" "${DL_URL}/${LAT_PACKAGE}" ; then
-  wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5" "${DL_URL}/${LAT_PACKAGE}.md5"
-  if [ "$(md5sum &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE} | awk '{print $1}')" != "$(cat &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5 | awk '{print $1}')" ]; then
+local destination="&packages;/${KERNEL_V%%-*}/${KERNEL_PACKAGE}"
+local temporary="${destination}.tmp"
+rm -f "${temporary}"
+if wget -q --show-progress --progress=bar:force:noscroll -O "${temporary}" "${KERNEL_URL}" ; then
+  if ! echo "${KERNEL_SHA256}  ${temporary}" | sha256sum -c - >/dev/null 2>&amp;1 ; then
     echo
     echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
-    echo "--------------------------------CHECKSUM ERROR!---------------------------------"
-    rm -rf &plugin; &emhttp;
+    echo "----------------------KERNEL PACKAGE CHECKSUM ERROR!--------------------------"
+    rm -f "${temporary}"
     exit 1
   fi
+  mv -f "${temporary}" "${destination}"
   echo
   echo "----------Successfully downloaded UGREEN LED Driver, please wait...!-----------"
 else
   echo
   echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
   echo "---------------------Can't download UGREEN LED Driver--------------------------"
-  rm -rf &plugin; &emhttp;
+  rm -f "${temporary}"
   exit 1
 fi
 }
 
 check() {
-if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -q "${PACKAGE}" ; then
-  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/ich777/unraid-ugreenleds-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
+local destination="&packages;/${KERNEL_V%%-*}/${KERNEL_PACKAGE}"
+if [ ! -f "${destination}" ] || ! echo "${KERNEL_SHA256}  ${destination}" | sha256sum -c - >/dev/null 2>&amp;1 ; then
+  rm -f "${destination}"
   echo
   echo "----------------Downloading UGREEN LED Driver, please wait...!----------------"
   echo "----------This could take some time, please don't close this window!----------"
@@ -116,16 +134,26 @@ else
 fi
 }
 
-# Install package function
-install() {
-  /sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}*.txz" >/dev/null
+# Install kernel-module package function
+install_kernel_module() {
+  /sbin/installpkg "&packages;/${KERNEL_V%%-*}/${KERNEL_PACKAGE}" >/dev/null
   /sbin/depmod -a
 }
 
 # Define Variables
 KERNEL_V="$(uname -r)"
-PACKAGE="ugreen_leds"
-DL_URL="https://github.com/ich777/unraid-ugreenleds-driver/releases/download/$KERNEL_V"
+EXPECTED_KERNEL_V="&kernel-version;"
+KERNEL_PACKAGE="&kernel-package;"
+KERNEL_SHA256="&kernel-sha256;"
+KERNEL_URL="https://github.com/ich777/unraid-ugreenleds-driver/releases/download/${EXPECTED_KERNEL_V}/${KERNEL_PACKAGE}"
+
+if [ "${KERNEL_V}" != "${EXPECTED_KERNEL_V}" ]; then
+  echo
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
+  echo "This reviewed plugin release supports kernel ${EXPECTED_KERNEL_V}, not ${KERNEL_V}."
+  echo "Review and publish a new pinned release before installing on another kernel."
+  exit 1
+fi
 
 # Create package directory for running Kernel
 if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
@@ -185,15 +213,15 @@ if ! grep -q "ARRAY_HEALTH_LED" "&plugin;/settings.cfg"; then
   echo 'UPS_ALERT_LED="true"' >> &plugin;/settings.cfg
 fi
 
-# Check for old packages
-rm -rf $(ls -d &packages;/* | grep -v "${KERNEL_V%%-*}")
+# Check for old kernel-package directories
+find "&packages;" -mindepth 1 -maxdepth 1 -type d ! -name "${KERNEL_V%%-*}" -exec rm -rf -- {} +
 
 # Check if UGREEN LED Driver is already downloaded
 check
 
 # Check if UGREEN LED Driver module is already installed
 if ! modinfo led-ugreen -0 >/dev/null 2>&amp;1 ; then
-  install
+  install_kernel_module
 fi
 
 # Check if ugreen-leds script is already started
@@ -214,7 +242,7 @@ bash &emhttp;/include/apply.sh cron
 
 # Download logo
 if [ ! -f "&plugin;/&name;.png" ]; then
-  wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/&name;.png" "https://raw.githubusercontent.com/ich777/docker-templates/master/ich777/images/ugreennas.png"
+  wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/&name;.png" "https://raw.githubusercontent.com/ich777/docker-templates/3d0bc3590ceb397c2fa8fad37dff1674d60294a6/ich777/images/ugreennas.png"
 fi
 
 #Install icon
@@ -225,39 +253,30 @@ if [ ! -f "&emhttp;/images/&name;.png" ]; then
   cp &plugin;/&name;.png &emhttp;/images/
 fi
 
-#Check if Plugin Update Helper is downloaded and up-to-date
-if [ ! -f &plugin;/plugin_update_helper ]; then
-  wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
-else
-  CUR_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
-  if [ ! -s /tmp/update-helper ]; then
-    echo "$(wget -T5 -qO- https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper | grep -E "Plugin-Update-Helper version:" | awk '{print $4}')" > /tmp/update-helper
-    AVAIL_V="$(cat /tmp/update-helper)"
-  else
-    AVAIL_V="$(cat /tmp/update-helper)"
+# Download and install the reviewed Plugin Update Helper.
+HELPER_URL="https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/&helper-commit;/plugin_update_helper"
+HELPER_SHA256="&helper-sha256;"
+HELPER_PATH="&plugin;/plugin_update_helper"
+HELPER_TEMP="${HELPER_PATH}.tmp"
+
+if [ ! -f "${HELPER_PATH}" ] || ! echo "${HELPER_SHA256}  ${HELPER_PATH}" | sha256sum -c - >/dev/null 2>&amp;1 ; then
+  rm -f "${HELPER_TEMP}"
+  if ! wget -q -T 5 -O "${HELPER_TEMP}" "${HELPER_URL}" ; then
+    echo "Failed to download the pinned Plugin Update Helper."
+    rm -f "${HELPER_TEMP}"
+    exit 1
   fi
-  if [ ! -z "$AVAIL_V" ]; then
-    COMPARE="$(sort -V &lt;(echo -e "${AVAIL_V}\n$CUR_V") | tail -1)"
-    if [ "$CUR_V" != "$COMPARE" ]; then
-      wget -q -T 5 -O &plugin;/plugin_update_helper "https://raw.githubusercontent.com/ich777/unraid-plugin_update_helper/master/plugin_update_helper"
-    fi
+  if ! echo "${HELPER_SHA256}  ${HELPER_TEMP}" | sha256sum -c - >/dev/null 2>&amp;1 ; then
+    echo "Plugin Update Helper checksum verification failed."
+    rm -f "${HELPER_TEMP}"
+    exit 1
   fi
+  mv -f "${HELPER_TEMP}" "${HELPER_PATH}"
 fi
 
-#Check if Plugin Update Helper is installed and up to date
-if [ ! -f /usr/bin/plugin_update_helper ]; then
-  cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
-  chmod +x /usr/bin/plugin_update_helper
-else
-  PLUGIN_V="$(grep -E "Plugin-Update-Helper version:" &plugin;/plugin_update_helper | awk '{print $4}')"
-  INST_V="$(grep -E "Plugin-Update-Helper version:" /usr/bin/plugin_update_helper | awk '{print $4}')"
-  COMPARE="$(sort -V &lt;(echo -e "${PLUGIN_V}\n$INST_V") | tail -1)"
-  if [ "$INST_V" != "$COMPARE" ]; then
-    kill $(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}') 2>/dev/null
-    sleep 1
-    cp &plugin;/plugin_update_helper /usr/bin/plugin_update_helper
-    chmod +x /usr/bin/plugin_update_helper
-  fi
+if [ ! -f /usr/bin/plugin_update_helper ] || ! echo "${HELPER_SHA256}  /usr/bin/plugin_update_helper" | sha256sum -c - >/dev/null 2>&amp;1 ; then
+  pkill -f "inotifywait -q /boot/changes.txt -e move_self,delete_self,modify" >/dev/null 2>&amp;1 || true
+  /usr/bin/install -m 0755 "${HELPER_PATH}" /usr/bin/plugin_update_helper
 fi
 
 #Start Plugin Update Helper
@@ -283,7 +302,7 @@ kill $(pgrep -f "/usr/bin/ugreen-leds") >/dev/null 2>&amp;1
 rm -f &plugin;/night-mode.cron
 command -v update_cron >/dev/null 2>&amp;1 &amp;&amp; update_cron
 # Remove plugin related files
-removepkg &name;-&version; >/dev/null 2>&amp;1
+removepkg &name;-&package-version; >/dev/null 2>&amp;1
 rm -rf &plugin;
 # fork: remove settings UI page
 rm -rf &emhttp;

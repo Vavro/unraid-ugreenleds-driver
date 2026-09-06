@@ -3,7 +3,7 @@ mkdir -p /UGREENLEDS/lib/modules/${UNAME}/extra
 cd ${DATA_DIR}
 git clone https://github.com/miskcoo/ugreen_dx4600_leds_controller
 cd ${DATA_DIR}/ugreen_dx4600_leds_controller
-git checkout master
+git checkout aea60be474c3b76ef7115eee7bdbe37cdc77fe04
 PLUGIN_VERSION="$(git log -1 --format="%cs" | sed 's/-//g')"
 
 # Compile module and copy it over to destination

@@ -2,7 +2,12 @@
 
 This is a fork of [ich777/unraid-ugreenleds-driver](https://github.com/ich777/unraid-ugreenleds-driver), which itself is based on [miskcoo/ugreen_dx4600_leds_controller](https://github.com/miskcoo/ugreen_dx4600_leds_controller). All credit for the original LED driver, disk/network monitoring daemon, and kernel module support goes to **ich777** and **miskcoo** — this fork only adds a configuration UI and a few new features on top of their work.
 
-**Install URL:** `https://raw.githubusercontent.com/hanssep/unraid-ugreenleds-driver/master/ugreenleds-driver.plg`
+This fork is a reviewed, fail-closed build for DrogonNAS on Unraid 7.3.2. It
+does not follow mutable upstream branches at runtime. The plugin payload,
+I2C tools, update helper, and kernel module are pinned to reviewed artifacts
+and verified with SHA-256.
+
+**Install URL:** `https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.1/ugreenleds-driver.plg`
 
 ## What This Fork Adds
 
@@ -45,14 +50,29 @@ These are added automatically to existing installs the first time you update —
 From **Plugins → Install Plugin** in the Unraid webGUI, paste:
 
 ```
-https://raw.githubusercontent.com/hanssep/unraid-ugreenleds-driver/master/ugreenleds-driver.plg
+https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.1/ugreenleds-driver.plg
 ```
 
 Or from the CLI:
 
 ```bash
-plugin install https://raw.githubusercontent.com/hanssep/unraid-ugreenleds-driver/master/ugreenleds-driver.plg
+plugin install https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.1/ugreenleds-driver.plg
 ```
+
+## Update policy
+
+This fork intentionally does not update itself from `master`.
+
+- The plugin update URL points to immutable tag `v2026.09.06.1`.
+- Installation is restricted to Unraid 7.3.2 and kernel 6.18.38-Unraid.
+- A newer Unraid kernel must fail closed until its driver artifact and source
+  are reviewed and a new tagged plugin release is published.
+- Updating the helper requires reviewing a new upstream commit and changing
+  both its commit pin and SHA-256 in the plugin descriptor.
+- Do not move or rewrite published release tags.
+
+The upstream projects remain the source for future changes, but updates are
+merged manually after review rather than consumed automatically.
 
 ## Migration from a Manual `/boot/config/go` Patch
 
@@ -65,6 +85,6 @@ Leaving your old `go` file edits in place will conflict with the plugin's settin
 
 ## Support
 
-Issues and questions for this fork: https://github.com/hanssep/unraid-ugreenleds-driver/issues
+Issues and questions for this fork: https://github.com/Vavro/unraid-ugreenleds-driver/issues
 
 For questions about the underlying driver/daemon behavior unrelated to the settings UI, the upstream support thread is also a good resource: https://forums.unraid.net/topic/92865-support-ich777-amd-vendor-reset-coraltpu-hpsahba/
