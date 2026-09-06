@@ -3,8 +3,8 @@
   <!ENTITY name        "ugreenleds-driver">
   <!ENTITY author      "hanssep">
   <!ENTITY version     "2026.09.06">
-  <!ENTITY package-version "2026.07.05">
-  <!ENTITY md5         "8fe350689d2ad4b7a6587e4d5c2fccf4">
+  <!ENTITY package-version "2026.09.06">
+  <!ENTITY md5         "375e1537b9a51d2f55b3d8094af2ab3c">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-md5     "779c835a2eb2e2ae65319f8de2d6a7d3">
   <!ENTITY helper-commit "f0562fc1add4ed20c20451bf17f570502bc7ed00">
@@ -22,6 +22,10 @@
 
 ###2026.09.06
 - Pin the Plugin Update Helper to a reviewed commit and verify it with SHA-256
+- Fix settings page reload loop after Apply and enable Apply for color-only edits
+- Reset the power LED to white when array-health coloring is disabled
+- Skip duplicate I2C client registration on daemon restart
+- Thanks to Petr Vavro for reporting and fixing all four issues
 
 ###2026.07.05
 - Fork of ich777/unraid-ugreenleds-driver, credit to ich777 for the original plugin
