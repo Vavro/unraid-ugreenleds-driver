@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.2.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.3.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=0d68803a1fbf304d3dfb3c41f3085cab12bec95a052c2fbe7673d3eddf0f0875
+EXPECTED_PLUGIN_SHA=a9898fda29895be2ba4b209c06a29960f0c6cc8bb890e3ce2a36e3f5399a7626
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -33,6 +33,8 @@ if grep -F 'parent.window.location.reload()' "${SETTINGS_PAGE}" >/dev/null; then
 fi
 test "$(grep -Fc 'parent.window.location.replace(parent.window.location.pathname + parent.window.location.search)' "${SETTINGS_PAGE}")" -eq 2 ||
   fail "Apply and restart handlers must redirect to an explicit GET"
+grep -F "hidden.val(triplet).trigger('change')" "${SETTINGS_PAGE}" >/dev/null ||
+  fail "Color picker changes do not mark the persisted hidden field as changed"
 
 for index in 1 2 3 4; do
   script="/tmp/inline-${index}.sh"

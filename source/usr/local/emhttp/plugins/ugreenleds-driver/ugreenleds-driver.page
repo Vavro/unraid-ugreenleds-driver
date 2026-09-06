@@ -476,7 +476,7 @@ $(function() {
   $('.ug-color-picker').on('change input', function() {
     var hidden = $('#' + $(this).data('target'));
     var triplet = ugHexToRgbTriplet(this.value);
-    hidden.val(triplet);
+    hidden.val(triplet).trigger('change');
     var target = $(this).data('preview');
     if (target) {
       $.post('/plugins/ugreenleds-driver/include/preview.php', {target: target, color: triplet, csrf_token: ugreenCsrf});
