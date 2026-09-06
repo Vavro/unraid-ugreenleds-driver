@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
   <!ENTITY author      "Vavro">
-  <!ENTITY version     "2026.09.06.3">
-  <!ENTITY release     "v2026.09.06.3">
-  <!ENTITY package-version "2026.09.06.1">
-  <!ENTITY package-sha256 "98e644e440319c327f93d55c102fe757e7923452a77a9999be3202a61e245fdd">
+  <!ENTITY version     "2026.09.06.4">
+  <!ENTITY release     "v2026.09.06.4">
+  <!ENTITY package-version "2026.09.06.2">
+  <!ENTITY package-sha256 "0d68803a1fbf304d3dfb3c41f3085cab12bec95a052c2fbe7673d3eddf0f0875">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-sha256  "9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c">
   <!ENTITY kernel-version "6.18.38-Unraid">
@@ -23,6 +23,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.3.2" max="7.3.2" support="https://github.com/Vavro/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.09.06.4
+- Restore the normal white power LED when array-health coloring is disabled
 
 ###2026.09.06.3
 - Restore WebGUI registration by packaging plugin page metadata with Unix line endings
