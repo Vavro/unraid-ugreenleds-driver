@@ -2,6 +2,8 @@
 
 This is a fork of [ich777/unraid-ugreenleds-driver](https://github.com/ich777/unraid-ugreenleds-driver), which itself is based on [miskcoo/ugreen_dx4600_leds_controller](https://github.com/miskcoo/ugreen_dx4600_leds_controller). All credit for the original LED driver, disk/network monitoring daemon, and kernel module support goes to **ich777** and **miskcoo** — this fork only adds a configuration UI and a few new features on top of their work.
 
+> **Upstream is deprecated — this fork continues it.** ich777 marked the original plugin `DEPRECATED` on 2026-08-15 and, on 2026-09-05, capped it at Unraid 7.3.2 via `max="7.3.2"` in its `.plg`, so it will refuse to install on later releases. This fork is actively maintained and **deliberately does not carry that cap**. That is a considered choice, not an oversight: the plugin is known working on 7.3.2, and no upper bound is declared until a real incompatibility turns up. Credit for the original driver and daemon stands unchanged.
+
 **Install URL:** `https://raw.githubusercontent.com/hanssep/unraid-ugreenleds-driver/master/ugreenleds-driver.plg`
 
 ## What This Fork Adds
