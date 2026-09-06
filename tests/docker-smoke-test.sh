@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.4.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.5.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=282e9df79a799869fb5564827f87dfb977dbf10b300dbf9fcf7442a6bccc744f
+EXPECTED_PLUGIN_SHA=aaafbc9c26bc4ed773bcd14ebf7a7f7f4cf247869c1d9153bedcf400803b2b05
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -69,6 +69,8 @@ bash -n /usr/bin/ugreen-leds
 bash -n /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh
 grep -F 'restore_power_led' /usr/bin/ugreen-leds >/dev/null ||
   fail "The daemon does not restore normal power LED state on restart"
+grep -F '[[ ! -e "/sys/bus/i2c/devices/${I2C_DEV#i2c-}-003a" ]]' /usr/bin/ugreen-leds >/dev/null ||
+  fail "The daemon does not guard against duplicate I2C client registration"
 
 rm -f \
   /usr/bin/uname \

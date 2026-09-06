@@ -15,8 +15,8 @@ or requiring an Unraid license:
 Run from the repository root:
 
 ```powershell
-docker build --quiet -f tests\Dockerfile -t ugreen-led-plugin-smoke:v2026.09.06.6 .
-docker run --rm ugreen-led-plugin-smoke:v2026.09.06.6
+docker build --quiet -f tests\Dockerfile -t ugreen-led-plugin-smoke:v2026.09.06.7 .
+docker run --rm ugreen-led-plugin-smoke:v2026.09.06.7
 ```
 
 `tests/fixtures/unraid-7.3.2.env` contains only non-sensitive observations from

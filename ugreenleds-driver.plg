@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
   <!ENTITY author      "Vavro">
-  <!ENTITY version     "2026.09.06.6">
-  <!ENTITY release     "v2026.09.06.6">
-  <!ENTITY package-version "2026.09.06.4">
-  <!ENTITY package-sha256 "282e9df79a799869fb5564827f87dfb977dbf10b300dbf9fcf7442a6bccc744f">
+  <!ENTITY version     "2026.09.06.7">
+  <!ENTITY release     "v2026.09.06.7">
+  <!ENTITY package-version "2026.09.06.5">
+  <!ENTITY package-sha256 "aaafbc9c26bc4ed773bcd14ebf7a7f7f4cf247869c1d9153bedcf400803b2b05">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-sha256  "9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c">
   <!ENTITY kernel-version "6.18.38-Unraid">
@@ -23,6 +23,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.3.2" max="7.3.2" support="https://github.com/Vavro/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.09.06.7
+- Skip duplicate I2C client registration when the LED controller already exists
 
 ###2026.09.06.6
 - Explicitly enable Apply after Dynamix processes a color-only change
