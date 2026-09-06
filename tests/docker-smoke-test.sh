@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.3.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.4.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=a9898fda29895be2ba4b209c06a29960f0c6cc8bb890e3ce2a36e3f5399a7626
+EXPECTED_PLUGIN_SHA=282e9df79a799869fb5564827f87dfb977dbf10b300dbf9fcf7442a6bccc744f
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -35,6 +35,8 @@ test "$(grep -Fc 'parent.window.location.replace(parent.window.location.pathname
   fail "Apply and restart handlers must redirect to an explicit GET"
 grep -F "hidden.val(triplet).trigger('change')" "${SETTINGS_PAGE}" >/dev/null ||
   fail "Color picker changes do not mark the persisted hidden field as changed"
+grep -F "setTimeout(ugEnableApply, 0)" "${SETTINGS_PAGE}" >/dev/null ||
+  fail "Color picker changes do not explicitly enable Apply after Dynamix handling"
 
 for index in 1 2 3 4; do
   script="/tmp/inline-${index}.sh"
