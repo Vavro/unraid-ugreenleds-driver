@@ -36,6 +36,16 @@ in_night_window() {
   if [ "$s" -lt "$e" ]; then [ "$h" -ge "$s" ] && [ "$h" -lt "$e" ]; else [ "$h" -ge "$s" ] || [ "$h" -lt "$e" ]; fi
 }
 
+restore_power_led() {
+  [[ -d /sys/class/leds/power ]] || return
+  echo "255 255 255" > /sys/class/leds/power/color 2>/dev/null
+  if in_night_window; then
+    echo "${BRIGHTNESS_NIGHT:-15}" > /sys/class/leds/power/brightness
+  else
+    echo "${BRIGHTNESS_POWER_DAY:-128}" > /sys/class/leds/power/brightness
+  fi
+}
+
 # fork: read a quoted key="value" from var.ini
 read_var_ini() {
   grep -Po "(?<=^$1=\")[^\"]*" /var/local/emhttp/var.ini 2>/dev/null | head -1
@@ -153,14 +163,8 @@ case "${product_name}" in
     ;;
 esac
 
-# fork: night mode — initialize power LED brightness based on time-of-day
-if [[ -d /sys/class/leds/power ]]; then
-  if in_night_window; then
-    echo "${BRIGHTNESS_NIGHT:-15}" > /sys/class/leds/power/brightness
-  else
-    echo "${BRIGHTNESS_POWER_DAY:-128}" > /sys/class/leds/power/brightness
-  fi
-fi
+# fork: restore the normal power LED before optional health/UPS features take ownership
+restore_power_led
 
 # fork: night mode — initialize netdev LED brightness based on time-of-day
 # (skipped in breathe mode: the breathing loop below owns netdev brightness)
@@ -485,14 +489,7 @@ if [[ "${UPS_ALERT_LED:-true}" == "true" ]] && command -v apcaccess >/dev/null 2
         # the paused loops (gw color, netdev breathe, array health, parity, disk activity/offline)
         # simply resume once the alert flag is gone; killing/exec'ing here only replaced this
         # subshell's own process and left the real daemon running twice.
-        if [[ -d /sys/class/leds/power ]]; then
-          echo "255 255 255" > /sys/class/leds/power/color 2>/dev/null
-          if in_night_window; then
-            echo "${BRIGHTNESS_NIGHT:-15}" > /sys/class/leds/power/brightness 2>/dev/null
-          else
-            echo "${BRIGHTNESS_POWER_DAY:-128}" > /sys/class/leds/power/brightness 2>/dev/null
-          fi
-        fi
+        restore_power_led
         if [[ -d /sys/class/leds/netdev ]]; then
           if [[ "${NETDEV_LED_MODE:-netdev}" == "breathe" ]]; then
             echo none > /sys/class/leds/netdev/trigger 2>/dev/null  # breathe loop resumes brightness on its own
