@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.1.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=bd724a7e00ae1ef741ceb1449c6ca9e7b548295af62b54aa5e22880568450fc0
+EXPECTED_PLUGIN_SHA=98e644e440319c327f93d55c102fe757e7923452a77a9999be3202a61e245fdd
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -50,6 +50,16 @@ mkdir -p \
   /usr/local/sbin
 
 tar -xJf "${PLUGIN_PACKAGE}" -C /
+
+for text_file in \
+  /usr/bin/ugreen-leds \
+  /usr/local/emhttp/plugins/ugreenleds-driver/ugreenleds-driver.page \
+  /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh \
+  /usr/local/emhttp/plugins/ugreenleds-driver/include/preview.php; do
+  if grep -q $'\r' "${text_file}"; then
+    fail "Packaged text file contains CRLF endings: ${text_file}"
+  fi
+done
 
 bash -n /usr/bin/ugreen-leds
 bash -n /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh

@@ -7,7 +7,7 @@ does not follow mutable upstream branches at runtime. The plugin payload,
 I2C tools, update helper, and kernel module are pinned to reviewed artifacts
 and verified with SHA-256.
 
-**Install URL:** `https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.2/ugreenleds-driver.plg`
+**Install URL:** `https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.3/ugreenleds-driver.plg`
 
 ## What This Fork Adds
 
@@ -50,7 +50,7 @@ These are added automatically to existing installs the first time you update —
 From **Plugins → Install Plugin** in the Unraid webGUI, paste:
 
 ```
-https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.2/ugreenleds-driver.plg
+https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/v2026.09.06.3/ugreenleds-driver.plg
 ```
 
 Or from the CLI:
@@ -63,7 +63,7 @@ plugin install https://raw.githubusercontent.com/Vavro/unraid-ugreenleds-driver/
 
 This fork intentionally does not update itself from `master`.
 
-- The plugin update URL points to immutable tag `v2026.09.06.2`.
+- The plugin update URL points to immutable tag `v2026.09.06.3`.
 - Installation is restricted to Unraid 7.3.2 and kernel 6.18.38-Unraid.
 - A newer Unraid kernel must fail closed until its driver artifact and source
   are reviewed and a new tagged plugin release is published.
