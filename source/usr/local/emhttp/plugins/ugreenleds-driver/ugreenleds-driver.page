@@ -74,7 +74,7 @@ $cfg = ugreenleds_read_cfg($cfgFile, $cfgDefaults);
 // fork: POST handlers — restart daemon only
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restart'])) {
   shell_exec('bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh restart >/dev/null 2>&1 &');
-  echo '<script>parent.window.location.reload();</script>';
+  echo '<script>parent.window.location.replace(parent.window.location.pathname + parent.window.location.search);</script>';
   exit;
 }
 
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply'])) {
   ugreenleds_write_cfg($cfgFile, $new, $cfgOrder);
   $cfg = $new;
   shell_exec('bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh apply >/dev/null 2>&1 &');
-  echo '<script>parent.window.location.reload();</script>';
+  echo '<script>parent.window.location.replace(parent.window.location.pathname + parent.window.location.search);</script>';
   exit;
 }
 
@@ -184,7 +184,7 @@ input[type=range].ug-brightness { width: 220px; vertical-align: middle; }
   </form>
 </div>
 
-<form method="post">
+<form method="post" id="ugreenleds-settings-form">
 <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($var['csrf_token'] ?? '', ENT_QUOTES)?>">
 
 <div class="title">
@@ -444,7 +444,7 @@ input[type=range].ug-brightness { width: 220px; vertical-align: middle; }
 
 <dl>
 <dt>&nbsp;</dt>
-<dd><input type="submit" name="apply" value="Apply"></dd>
+<dd><input type="submit" id="ugreenleds-apply" name="apply" value="Apply"></dd>
 </dl>
 
 </form>
@@ -464,6 +464,9 @@ function ugRgbTripletToHex(triplet) {
     return ('0' + Math.max(0, Math.min(255, n)).toString(16)).slice(-2);
   }).join('');
 }
+function ugEnableApply() {
+  $('#ugreenleds-apply').prop('disabled', false).removeAttr('disabled');
+}
 
 $(function() {
   // fork: sync color pickers from their hidden R G B fields on load
@@ -476,7 +479,8 @@ $(function() {
   $('.ug-color-picker').on('change input', function() {
     var hidden = $('#' + $(this).data('target'));
     var triplet = ugHexToRgbTriplet(this.value);
-    hidden.val(triplet);
+    hidden.val(triplet).trigger('change');
+    setTimeout(ugEnableApply, 0);
     var target = $(this).data('preview');
     if (target) {
       $.post('/plugins/ugreenleds-driver/include/preview.php', {target: target, color: triplet, csrf_token: ugreenCsrf});
