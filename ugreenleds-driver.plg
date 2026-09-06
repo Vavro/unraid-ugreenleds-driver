@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
   <!ENTITY author      "Vavro">
-  <!ENTITY version     "2026.09.06.1">
-  <!ENTITY release     "v2026.09.06.1">
-  <!ENTITY package-version "2026.07.05">
-  <!ENTITY package-sha256 "95e66e4e6f7b589d22d830dec53f58f0f6e54d5c0e50402b64264f9151d7b57f">
+  <!ENTITY version     "2026.09.06.2">
+  <!ENTITY release     "v2026.09.06.2">
+  <!ENTITY package-version "2026.09.06">
+  <!ENTITY package-sha256 "bd724a7e00ae1ef741ceb1449c6ca9e7b548295af62b54aa5e22880568450fc0">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-sha256  "9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c">
   <!ENTITY kernel-version "6.18.38-Unraid">
@@ -23,6 +23,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.3.2" max="7.3.2" support="https://github.com/Vavro/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.09.06.2
+- Prevent Apply and Restart Daemon from repeatedly resubmitting their POST request
 
 ###2026.09.06.1
 - Pin the plugin update source to an immutable release tag

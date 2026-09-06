@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.07.05.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=95e66e4e6f7b589d22d830dec53f58f0f6e54d5c0e50402b64264f9151d7b57f
+EXPECTED_PLUGIN_SHA=bd724a7e00ae1ef741ceb1449c6ca9e7b548295af62b54aa5e22880568450fc0
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -27,6 +27,13 @@ assert_hash() {
 
 xmllint --noout "${PLUGIN}"
 
+SETTINGS_PAGE=/repo/source/usr/local/emhttp/plugins/ugreenleds-driver/ugreenleds-driver.page
+if grep -F 'parent.window.location.reload()' "${SETTINGS_PAGE}" >/dev/null; then
+  fail "Settings POST handlers can replay submissions through location.reload()"
+fi
+test "$(grep -Fc 'parent.window.location.replace(parent.window.location.pathname + parent.window.location.search)' "${SETTINGS_PAGE}")" -eq 2 ||
+  fail "Apply and restart handlers must redirect to an explicit GET"
+
 for index in 1 2 3 4; do
   script="/tmp/inline-${index}.sh"
   xmllint --noent \
@@ -43,6 +50,9 @@ mkdir -p \
   /usr/local/sbin
 
 tar -xJf "${PLUGIN_PACKAGE}" -C /
+
+bash -n /usr/bin/ugreen-leds
+bash -n /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh
 
 rm -f \
   /usr/bin/uname \
@@ -126,6 +136,8 @@ KERNEL_PATH="${PLUGIN_STATE}/packages/6.18.38/${KERNEL_PACKAGE}"
 
 test -f "${PLUGIN_STATE}/settings.cfg" ||
   fail "The default settings file was not created"
+bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh cron ||
+  fail "The packaged settings helper did not execute successfully"
 assert_hash "${EXPECTED_HELPER_SHA}" "${PLUGIN_STATE}/plugin_update_helper"
 assert_hash "${EXPECTED_HELPER_SHA}" /usr/bin/plugin_update_helper
 assert_hash "${EXPECTED_KERNEL_SHA}" "${KERNEL_PATH}"

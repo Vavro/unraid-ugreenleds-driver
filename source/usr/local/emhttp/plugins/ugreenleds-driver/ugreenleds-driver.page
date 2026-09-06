@@ -74,7 +74,7 @@ $cfg = ugreenleds_read_cfg($cfgFile, $cfgDefaults);
 // fork: POST handlers — restart daemon only
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restart'])) {
   shell_exec('bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh restart >/dev/null 2>&1 &');
-  echo '<script>parent.window.location.reload();</script>';
+  echo '<script>parent.window.location.replace(parent.window.location.pathname + parent.window.location.search);</script>';
   exit;
 }
 
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply'])) {
   ugreenleds_write_cfg($cfgFile, $new, $cfgOrder);
   $cfg = $new;
   shell_exec('bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh apply >/dev/null 2>&1 &');
-  echo '<script>parent.window.location.reload();</script>';
+  echo '<script>parent.window.location.replace(parent.window.location.pathname + parent.window.location.search);</script>';
   exit;
 }
 
