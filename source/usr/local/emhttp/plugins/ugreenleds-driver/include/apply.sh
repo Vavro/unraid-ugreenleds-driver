@@ -13,8 +13,8 @@ do_cron() {
   if [ "${NIGHT_MODE_ENABLED:-false}" == "true" ] && [ "${NIGHT_START_HOUR:-22}" != "${NIGHT_END_HOUR:-7}" ]; then
     {
       echo "# ugreenleds-driver night mode — regenerated on every apply, do not edit by hand"
-      echo "0 ${NIGHT_START_HOUR:-22} * * * bash -c 'for led in /sys/class/leds/power /sys/class/leds/netdev /sys/class/leds/disk*; do [ -d \"\$led\" ] && echo ${BRIGHTNESS_NIGHT:-15} > \"\$led/brightness\"; done'"
-      echo "0 ${NIGHT_END_HOUR:-7} * * * bash -c '[ -d /sys/class/leds/power ] && echo ${BRIGHTNESS_POWER_DAY:-128} > /sys/class/leds/power/brightness; for led in /sys/class/leds/netdev /sys/class/leds/disk*; do [ -d \"\$led\" ] && echo ${BRIGHTNESS_DISK_LEDS:-255} > \"\$led/brightness\"; done'"
+      echo "0 ${NIGHT_START_HOUR:-22} * * * /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh restart"
+      echo "0 ${NIGHT_END_HOUR:-7} * * * /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh restart"
     } > "$CRON_FILE"
   else
     rm -f "$CRON_FILE"
