@@ -5,9 +5,9 @@ source /repo/tests/fixtures/unraid-7.3.2.env
 export KERNEL_VERSION
 
 PLUGIN=/repo/ugreenleds-driver.plg
-PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.06.5.txz
+PLUGIN_PACKAGE=/repo/packages/ugreenleds-driver-2026.09.08.1.txz
 I2C_PACKAGE=/repo/packages/i2c-tools-4.3-x86_64-1.txz
-EXPECTED_PLUGIN_SHA=aaafbc9c26bc4ed773bcd14ebf7a7f7f4cf247869c1d9153bedcf400803b2b05
+EXPECTED_PLUGIN_SHA=06b85a51fa6a95896313656c0e5a3b6c4e98f0d5b5ffe8324e632364d40e7b79
 EXPECTED_I2C_SHA=9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c
 EXPECTED_HELPER_SHA=e528862eb9499b952d44cdd9b3ee1a44f3c7803cc7ea979272a5bb18e365b043
 EXPECTED_KERNEL_SHA=744a5bcb62fa0d8a831897617800b29c330026981e14e3041829383329648afa
@@ -156,6 +156,19 @@ test -f "${PLUGIN_STATE}/settings.cfg" ||
   fail "The default settings file was not created"
 bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh cron ||
   fail "The packaged settings helper did not execute successfully"
+sed -i \
+  -e 's/^NIGHT_MODE_ENABLED=.*/NIGHT_MODE_ENABLED="true"/' \
+  -e 's/^NIGHT_START_HOUR=.*/NIGHT_START_HOUR="18"/' \
+  -e 's/^NIGHT_END_HOUR=.*/NIGHT_END_HOUR="5"/' \
+  "${PLUGIN_STATE}/settings.cfg"
+bash /usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh cron ||
+  fail "The packaged settings helper did not generate the night-mode schedule"
+test "$(grep -Fc '/usr/local/emhttp/plugins/ugreenleds-driver/include/apply.sh restart' \
+  "${PLUGIN_STATE}/night-mode.cron")" -eq 2 ||
+  fail "Night-mode transitions must restart the daemon to preserve empty-bay state"
+if grep -F '/sys/class/leds/disk*' "${PLUGIN_STATE}/night-mode.cron" >/dev/null; then
+  fail "Night-mode transitions must not set brightness on every physical disk LED"
+fi
 assert_hash "${EXPECTED_HELPER_SHA}" "${PLUGIN_STATE}/plugin_update_helper"
 assert_hash "${EXPECTED_HELPER_SHA}" /usr/bin/plugin_update_helper
 assert_hash "${EXPECTED_KERNEL_SHA}" "${KERNEL_PATH}"

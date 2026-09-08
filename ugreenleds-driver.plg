@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name        "ugreenleds-driver">
   <!ENTITY author      "Vavro">
-  <!ENTITY version     "2026.09.06.7">
-  <!ENTITY release     "v2026.09.06.7">
-  <!ENTITY package-version "2026.09.06.5">
-  <!ENTITY package-sha256 "aaafbc9c26bc4ed773bcd14ebf7a7f7f4cf247869c1d9153bedcf400803b2b05">
+  <!ENTITY version     "2026.09.08.1">
+  <!ENTITY release     "v2026.09.08.1">
+  <!ENTITY package-version "2026.09.08.1">
+  <!ENTITY package-sha256 "06b85a51fa6a95896313656c0e5a3b6c4e98f0d5b5ffe8324e632364d40e7b79">
   <!ENTITY i2c-version "4.3">
   <!ENTITY i2c-sha256  "9730e890d81743f4827715ae38019715fe8252c9bc6d95af4b5f64339238106c">
   <!ENTITY kernel-version "6.18.38-Unraid">
@@ -23,6 +23,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.3.2" max="7.3.2" support="https://github.com/Vavro/unraid-ugreenleds-driver/issues">
 
 <CHANGES>
+
+###2026.09.08.1
+- Preserve empty-bay state across scheduled night-mode brightness transitions
 
 ###2026.09.06.7
 - Skip duplicate I2C client registration when the LED controller already exists
